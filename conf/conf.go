@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"fmt"
 	"github.com/Unknwon/goconfig"
 	"log"
 	"path/filepath"
@@ -34,7 +35,9 @@ type Headerrule struct {
 
 var HR Headerrule
 var Chapterrules1 Chapter1
+var Chapterrules1slice *[]string
 var Chapterrules2 Chapter2
+var Chapterrules2slice *[]string
 var Mysql_conf_str Mysql_conf
 var Main_str mainS
 
@@ -90,10 +93,22 @@ func (this *mainS)main_fun(c *goconfig.ConfigFile,err error)  {
 
 func (this *Chapter1) Getchapterrules(c *goconfig.ConfigFile) {
 	this.Rules = c.GetKeyList("chapter_rules1")
+	for _,v := range this.Rules {
+		fmt.Println(v)
+		r,_ := c.GetValue("chapter_rules1", v)
+		var b []string
+		b = append(b,r)
+
+	}
 }
 
 func (this *Chapter2) Getchapterrules2(c *goconfig.ConfigFile) {
 	this.Rules = c.GetKeyList("chapter_rules2")
+	for _,v := range this.Rules {
+		r,_ := c.GetValue("chapter_rules2", v)
+		a := Chapterrules2slice
+		*a = append(*a,r)
+	}
 }
 
 func (this *Mysql_conf)Mysql_fun(c *goconfig.ConfigFile,err error) {

@@ -21,6 +21,9 @@ type Bookinfo struct {
 }
 var db *sql.DB
 var filenamech = make(chan string, 10)
+var cr = `^\s*.*第(\d+|[一二三四五六七八九十百千万]+)章.*[^。]*$`
+var cr1 = conf.Chapterrules1.Rules
+var cr2 = conf.Chapterrules2.Rules
 
 func GetBookinfo(Db *sql.DB)  {
 	db = Db
@@ -88,7 +91,7 @@ func (b *Bookinfo) getinfo(fp string) {
 
 	//匹配章节规则
 	var isok bool
-	var rules *string
+	var rules string
 	fi, err := os.Open(fp)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
@@ -101,23 +104,19 @@ func (b *Bookinfo) getinfo(fp string) {
 		if c == io.EOF {
 			break
 		}
-		isok,*rules = getrule(string(a))
+		//fmt.Println(string(a))
+		isok,rules = getrule(string(a))
 		if isok {
 			a := &n
 			*a = *a + 1
 		}
 	}
-	if n >= 2 {
-		b.RegexRules = *rules
+	if n >= 3 {
+		b.RegexRules = rules
 	}
 }
 
 func getrule(s string) (isok bool,r string) {
-	r = ""
-	cr := `^\s*.*第(\d+|[一二三四五六七八九十百千万]+)章.*[^。]*$`
-	cr1 := conf.Chapterrules1.Rules
-	cr2 := conf.Chapterrules2.Rules
-
 	//匹配  xxx第xx章xxx  类似章节名称
 	isok1 , err := regexp.Match(cr,[]byte(s))
 	if err != nil {
@@ -125,18 +124,22 @@ func getrule(s string) (isok bool,r string) {
 	}
 	//如果能匹配，则匹配更详细的规则作为该小说的规则
 	if isok1 {
-		for _,v := range cr1 {
+		//fmt.Println(s,":",cr)
+		for _,v := range *conf.Chapterrules1slice {
+
 			isok2 , _ := regexp.Match(v,[]byte(s))
 			if isok2 {
-				return true, r
+				fmt.Println(v)
+				return true, v
 			}
 		}
 	}
 	//如果都匹配不上，使用规则2中的规则。
-	for _,v := range cr2 {
+	for _,v := range *conf.Chapterrules2slice {
 		isok2 , _ := regexp.Match(v,[]byte(s))
 		if isok2 {
-			return true, r
+			fmt.Println(v)
+			return true, v
 		}
 	}
 	return false, ""
@@ -144,7 +147,7 @@ func getrule(s string) (isok bool,r string) {
 
 //book信息写入数据库
 func (b *Bookinfo) insert(db *sql.DB) {
-	stmt, err := db.Prepare(`INSERT books ( booksName,,sourcesfilename,regexRules) VALUES (?,?,?,?,?)`)
+	stmt, err := db.Prepare(`INSERT books ( booksName,sourcesfilename,regexRules) VALUES (?,?,?)`)
 	check(err)
 
 	res, err := stmt.Exec(b.Bookname,b.Sourcesfilename,b.RegexRules)
