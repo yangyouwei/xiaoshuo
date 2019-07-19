@@ -1,7 +1,6 @@
 package conf
 
 import (
-	"fmt"
 	"github.com/Unknwon/goconfig"
 	"log"
 	"path/filepath"
@@ -23,10 +22,10 @@ type Mysql_conf struct {
 }
 
 type Chapter1 struct {
-	Rules []string
+	Rules *[]string
 }
 type Chapter2 struct {
-	Rules []string
+	Rules *[]string
 }
 
 type Headerrule struct {
@@ -35,9 +34,7 @@ type Headerrule struct {
 
 var HR Headerrule
 var Chapterrules1 Chapter1
-var Chapterrules1slice *[]string
 var Chapterrules2 Chapter2
-var Chapterrules2slice *[]string
 var Mysql_conf_str Mysql_conf
 var Main_str mainS
 
@@ -52,7 +49,29 @@ func init() {
 	Chapterrules2.Getchapterrules2(cfg)
 	Mysql_conf_str.Mysql_fun(cfg,err)
 	Main_str.main_fun(cfg,err)
+
 }
+
+func (this *Chapter1) Getchapterrules(c *goconfig.ConfigFile) {
+	confkeys := c.GetKeyList("chapter_rules1")
+	var b []string
+	for _,v := range  confkeys{
+		r,_ := c.GetValue("chapter_rules1", v)
+		b = append(b,r)
+	}
+	this.Rules = &b
+}
+
+func (this *Chapter2) Getchapterrules2(c *goconfig.ConfigFile) {
+	confkeys := c.GetKeyList("chapter_rules2")
+	var b []string
+	for _,v := range confkeys {
+		r,_ := c.GetValue("chapter_rules2", v)
+		b = append(b,r)
+	}
+	this.Rules = &b
+}
+
 
 func (this *Headerrule)Headerrules(c *goconfig.ConfigFile,err error )  {
 	r,err := c.GetValue("headerrule","rules")
@@ -86,28 +105,6 @@ func (this *mainS)main_fun(c *goconfig.ConfigFile,err error)  {
 	if err != nil {
 		log.Fatalf("%s）：%s,无效", "mode", err)
 		panic(err)
-	}
-}
-
-
-
-func (this *Chapter1) Getchapterrules(c *goconfig.ConfigFile) {
-	this.Rules = c.GetKeyList("chapter_rules1")
-	for _,v := range this.Rules {
-		fmt.Println(v)
-		r,_ := c.GetValue("chapter_rules1", v)
-		var b []string
-		b = append(b,r)
-
-	}
-}
-
-func (this *Chapter2) Getchapterrules2(c *goconfig.ConfigFile) {
-	this.Rules = c.GetKeyList("chapter_rules2")
-	for _,v := range this.Rules {
-		r,_ := c.GetValue("chapter_rules2", v)
-		a := Chapterrules2slice
-		*a = append(*a,r)
 	}
 }
 

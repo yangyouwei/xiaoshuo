@@ -106,12 +106,15 @@ func (b *Bookinfo) getinfo(fp string) {
 		}
 		//fmt.Println(string(a))
 		isok,rules = getrule(string(a))
+//		fmt.Println(fp,":",isok,"：",rules)
 		if isok {
 			a := &n
+			``
 			*a = *a + 1
 		}
 	}
 	if n >= 3 {
+		fmt.Println(rules)
 		b.RegexRules = rules
 	}
 }
@@ -125,20 +128,22 @@ func getrule(s string) (isok bool,r string) {
 	//如果能匹配，则匹配更详细的规则作为该小说的规则
 	if isok1 {
 		//fmt.Println(s,":",cr)
-		for _,v := range *conf.Chapterrules1slice {
+		rules := *conf.Chapterrules1.Rules
+		for _,v := range rules {
 
 			isok2 , _ := regexp.Match(v,[]byte(s))
 			if isok2 {
-				fmt.Println(v)
+				//fmt.Println(v)
 				return true, v
 			}
 		}
 	}
 	//如果都匹配不上，使用规则2中的规则。
-	for _,v := range *conf.Chapterrules2slice {
+	rules := *conf.Chapterrules2.Rules
+	for _,v := range rules {
 		isok2 , _ := regexp.Match(v,[]byte(s))
 		if isok2 {
-			fmt.Println(v)
+			//fmt.Println(v)
 			return true, v
 		}
 	}
